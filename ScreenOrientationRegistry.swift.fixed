@@ -124,7 +124,7 @@ public class ScreenOrientationRegistry: NSObject, UIApplicationDelegate {
    */
   @objc
   public func requiredOrientationMask() -> UIInterfaceOrientationMask {
-    return queue.sync { // TODO &&&
+    return queue.sync {
       if controllerInterfaceMasks.isEmpty {
         return []
       }
@@ -204,11 +204,14 @@ public class ScreenOrientationRegistry: NSObject, UIApplicationDelegate {
    Called at the end of the screen orientation change. Notifies the controllers about the orientation change.
    */
   func screenOrientationDidChange(_ newScreenOrientation: UIInterfaceOrientation) {
-    queue.asyncAndWait(flags: .barrier) {
+    queue.sync(flags: .barrier) {
       // Write with the barrier:
-      self.currentScreenOrientation = newScreenOrientation
+      if self.currentScreenOrientation != newScreenOrientation {
+        // Only change if necessary, to prevent listeners from re-calling this method.
+        self.currentScreenOrientation = newScreenOrientation
+      }
     }
-    queue.async() {
+    queue.async {
       // Read without the barrier:
       for controller in self.orientationControllers {
         controller.screenOrientationDidChange(newScreenOrientation)
