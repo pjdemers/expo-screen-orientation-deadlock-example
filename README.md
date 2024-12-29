@@ -8,9 +8,9 @@ Switch to the "Table" tab. Rotate clockwise 1 time. If expo-screen-orientation w
 
 ## Bug Details
 
-PR [https://github.com/expo/expo/pull/33572](https://github.com/expo/expo/pull/33572) introduced a deadlock. Under some code paths, an async task with a barrier waits for a synced task on the same queue. 
+PR [https://github.com/expo/expo/pull/33572](https://github.com/expo/expo/pull/33572) introduced a deadlock. Under some code paths, an async task with a barrier waits for a synced task on the same queue. This is a deadlock, because tasks with barriers must all complete before tasks added later start.
 
-The deadlocking queue definition, in class ScreenOrientationRegistry: [https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L20}}](https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L20)
+The deadlocking queue definition, in class ScreenOrientationRegistry: [https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L20](https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L20)
 
 The problem starts in when the method screenOrientationDidChange in the same class ScreenOrientationRegistry, puts a task on the queue with a barrier, [https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L207](https://github.com/expo/expo/blob/b3aeeeac3fc5d19bd716b6fe94d16984383c2c09/packages/expo-screen-orientation/ios/ScreenOrientationRegistry.swift#L207)
 
