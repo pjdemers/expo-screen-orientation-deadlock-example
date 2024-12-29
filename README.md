@@ -29,12 +29,12 @@ Change method screenOrientationDidChange in class ScreenOrientationRegistry to q
   func screenOrientationDidChange(_ newScreenOrientation: UIInterfaceOrientation) {
     queue.sync(flags: .barrier) {
       // Write with the barrier:
-      if (self.currentScreenOrientation != newScreenOrientation) {
+      if self.currentScreenOrientation != newScreenOrientation {
         // Only change if necessary, to prevent listeners from re-calling this method.
         self.currentScreenOrientation = newScreenOrientation
       }
     }
-    queue.async() {
+    queue.async {
       // Read without the barrier:
       for controller in self.orientationControllers {
         controller.screenOrientationDidChange(newScreenOrientation)
