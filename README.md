@@ -24,12 +24,15 @@ This method puts a synchronous task on the same queue ScreenOrientationRegistry.
 
 ## Solution
 
-Change method screenOrientationDidChange in class ScreenOrientationRegistry to queue two tasks, with a wait on the first:
+Change method screenOrientationDidChange in class ScreenOrientationRegistry to queue two tasks, the first is synchronous:
 
   func screenOrientationDidChange(_ newScreenOrientation: UIInterfaceOrientation) {
-    queue.asyncAndWait(flags: .barrier) {
+    queue.sync(flags: .barrier) {
       // Write with the barrier:
-      self.currentScreenOrientation = newScreenOrientation
+      if (self.currentScreenOrientation != newScreenOrientation) {
+        // Only change if necessary, to prevent listeners from re-calling this method.
+        self.currentScreenOrientation = newScreenOrientation
+      }
     }
     queue.async() {
       // Read without the barrier:
